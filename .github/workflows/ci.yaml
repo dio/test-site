@@ -60,7 +60,6 @@ jobs:
           PR: ${{ steps.current-pr.outputs.pr }}
 
       - uses: peaceiris/actions-gh-pages@v3
-        if: ${{ github.ref == 'refs/heads/main' }}
         with:
           github_token: ${{ github.token }}
           publish_dir: builds/
