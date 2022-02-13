@@ -39,7 +39,7 @@ jobs:
         run: |
           yarn --cwd website --frozen-lockfile install
           BASE_URL="/test-site/${GITHUB_REF##*/}/" yarn --cwd website build
-          mkdir builds
+          mkdir -p builds
           rm -fr builds/${GITHUB_REF##*/}
           cp -r website/build builds/${GITHUB_REF##*/}
 
