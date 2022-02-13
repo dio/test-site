@@ -15,8 +15,8 @@ defaults:
     shell: bash
 
 jobs:
-  gen:
-    name: "gen" # TODO(dio): We should do check instead.
+  publish:
+    name: "publish"
     runs-on: ubuntu-20.04
     timeout-minutes: 90 # instead of 360 by default.
     steps:
@@ -42,7 +42,7 @@ jobs:
         if: ${{ github.ref == 'refs/heads/main' }}
         with:
           github_token: ${{ github.token }}
-          publish_dir: website/builds/
+          publish_dir: builds/
           # This allows you to make your publish branch with only the latest commit.
           # https://github.com/peaceiris/actions-gh-pages#%EF%B8%8F-force-orphan-force_orphan.
           force_orphan: true
