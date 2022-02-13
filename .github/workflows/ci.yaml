@@ -35,7 +35,8 @@ jobs:
           cache: "yarn"
           cache-dependency-path: "**/yarn.lock"
 
-      - name: Build website
+      - name: Build website on main
+        if: ${{ github.ref == 'refs/heads/main' }}
         run: |
           yarn --cwd website --frozen-lockfile install
           BASE_URL="/test-site/${GITHUB_REF##*/}/" yarn --cwd website build
@@ -43,7 +44,17 @@ jobs:
           rm -fr builds/${GITHUB_REF##*/}
           cp -r website/build builds/${GITHUB_REF##*/}
 
+      - name: Build website on PR
+        if: ${{ github.ref != 'refs/heads/main' }}
+        run: |
+          yarn --cwd website --frozen-lockfile install
+          BASE_URL="/test-site/${{ github.event.pull_request.number }}/" yarn --cwd website build
+          mkdir -p builds
+          rm -fr builds/${{ github.event.pull_request.number }}
+          cp -r website/build builds/${{ github.event.pull_request.number }}
+
       - uses: peaceiris/actions-gh-pages@v3
+        if: ${{ github.ref == 'refs/heads/main' }}
         with:
           github_token: ${{ github.token }}
           publish_dir: builds/
