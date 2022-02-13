@@ -30,9 +30,10 @@ jobs:
           cache: "yarn"
           cache-dependency-path: "**/yarn.lock"
 
-      - run: |
+      - name: Build and publish
+        run: |
           yarn --cwd website --frozen-lockfile install
-          BASE_URL="/test-site/${GITHUB_REF##*/}" yarn --cwd website build
+          BASE_URL="/test-site/${GITHUB_REF##*/}/" yarn --cwd website build
           mkdir builds
           rm -fr builds/${GITHUB_REF##*/}
           cp -r website/build builds/${GITHUB_REF##*/}
