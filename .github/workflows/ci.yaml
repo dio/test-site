@@ -35,35 +35,35 @@ jobs:
           cache: "yarn"
           cache-dependency-path: "**/yarn.lock"
 
+      - name: Build website on main
+        if: ${{ github.ref == 'refs/heads/main' }}
+        run: |
+          yarn --cwd website --frozen-lockfile install
+          BASE_URL="/test-site/${GITHUB_REF##*/}/" yarn --cwd website build
+          mkdir -p builds
+          rm -fr builds/${GITHUB_REF##*/}
+          cp -r website/build builds/${GITHUB_REF##*/}
+
       - uses: jwalton/gh-find-current-pr@v1
+        if: ${{ github.ref != 'refs/heads/main' }}
         id: current-pr
-      - run: echo "${PR}"
+
+      - name: Build website on PR
+        if: ${{ github.ref != 'refs/heads/main' }}
+        run: |
+          yarn --cwd website --frozen-lockfile install
+          BASE_URL="/test-site/${PR}/" yarn --cwd website build
+          mkdir -p builds
+          rm -fr builds/${PR}
+          cp -r website/build builds/${PR}
         env:
           PR: ${{ steps.current-pr.outputs.pr }}
 
-      # - name: Build website on main
-      #   if: ${{ github.ref == 'refs/heads/main' }}
-      #   run: |
-      #     yarn --cwd website --frozen-lockfile install
-      #     BASE_URL="/test-site/${GITHUB_REF##*/}/" yarn --cwd website build
-      #     mkdir -p builds
-      #     rm -fr builds/${GITHUB_REF##*/}
-      #     cp -r website/build builds/${GITHUB_REF##*/}
-
-      # - name: Build website on PR
-      #   if: ${{ github.ref != 'refs/heads/main' }}
-      #   run: |
-      #     yarn --cwd website --frozen-lockfile install
-      #     BASE_URL="/test-site/${{ github.event.pull_request.number }}/" yarn --cwd website build
-      #     mkdir -p builds
-      #     rm -fr builds/${{ github.event.pull_request.number }}
-      #     cp -r website/build builds/${{ github.event.pull_request.number }}
-
-      # - uses: peaceiris/actions-gh-pages@v3
-      #   if: ${{ github.ref == 'refs/heads/main' }}
-      #   with:
-      #     github_token: ${{ github.token }}
-      #     publish_dir: builds/
-      #     # This allows you to make your publish branch with only the latest commit.
-      #     # https://github.com/peaceiris/actions-gh-pages#%EF%B8%8F-force-orphan-force_orphan.
-      #     force_orphan: true
+      - uses: peaceiris/actions-gh-pages@v3
+        if: ${{ github.ref == 'refs/heads/main' }}
+        with:
+          github_token: ${{ github.token }}
+          publish_dir: builds/
+          # This allows you to make your publish branch with only the latest commit.
+          # https://github.com/peaceiris/actions-gh-pages#%EF%B8%8F-force-orphan-force_orphan.
+          force_orphan: true
