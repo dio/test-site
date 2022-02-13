@@ -1,0 +1,47 @@
+name: commit
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  # Allows triggering the workflow manually in github actions page.
+  workflow_dispatch:
+
+defaults:
+  run: # use bash for all operating systems unless overridden
+    shell: bash
+
+jobs:
+  gen:
+    name: "gen" # TODO(dio): We should do check instead.
+    runs-on: ubuntu-20.04
+    timeout-minutes: 90 # instead of 360 by default.
+    steps:
+      - uses: styfle/cancel-workflow-action@0.4.1
+        with:
+          access_token: ${{ github.token }}
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: "16.x"
+          cache: "yarn"
+          cache-dependency-path: "**/yarn.lock"
+
+      - run: |
+          yarn --cwd website --frozen-lockfile install
+          BASE_URL="/test-site/${GITHUB_REF##*/}" yarn --cwd website build
+          mkdir builds
+          rm -fr builds/${GITHUB_REF##*/}
+          cp -r website/build builds/${GITHUB_REF##*/}
+
+      - uses: peaceiris/actions-gh-pages@v3
+        if: ${{ github.ref == 'refs/heads/main' }}
+        with:
+          github_token: ${{ github.token }}
+          publish_dir: website/builds/
+          # This allows you to make your publish branch with only the latest commit.
+          # https://github.com/peaceiris/actions-gh-pages#%EF%B8%8F-force-orphan-force_orphan.
+          force_orphan: true
